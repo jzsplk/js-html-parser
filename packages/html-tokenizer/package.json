@@ -25,6 +25,7 @@
     "url": "git+https://github.com/jzsplk/js-html-parser.git"
   },
   "scripts": {
+    "dev": "yarn",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {
