@@ -15,7 +15,13 @@ console.log([...tokenizer._tokenize(demoHtml)]);
 
 ## Dev
 
-1. test
+1. install
+
+```
+yarn install
+```
+
+2. test
 
 ```
 yarn test
