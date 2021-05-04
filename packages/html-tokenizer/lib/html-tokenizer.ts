@@ -71,77 +71,84 @@ export class Tokenizer {
     
     *_tokenize(html:string): IterableIterator<Token> {
         while(this.pos < html.length) {
-            if(this.state === State.Data) {
-                this.consume_next_char(html);
-                const isBracket = this.current_input_character === '<';
-                // console.log('isBracket', isBracket);
-                const isEof = this.pos >= html.length;
-                if(isBracket && !isEof) {
-                    this.state = State.TagOpen;
-                      // yield TokenEnum.CharacterToken
-                } else if(isEof) {
-                    yield TokenEnum.EOFToken;
-                } else {
-                    yield {
-                        content: this.current_input_character
-                    }
-                }
-             } else if (this.state === State.TagOpen) {
-                // console.log('state', this.state);
-                this.consume_next_char(html);
-                if(this.current_input_character === '/') {
-                    this.state = State.EndTagOpen;
-                } else {
-                    this.current_tag = {
-                        kind: TagKind.StartTag,
-                        name: '',
-                        self_closing: false,
-                        attrs: [],
-                    }
-                    this.shouldReconsume = true;
-                    this.state = State.TagName 
-                }
-             } else if(this.state === State.TagName) {
-                // console.log('state', this.state);
-                if (this.shouldReconsume) {
-                    this.reconsume();
-                } else {
+            switch (this.state) {
+                case State.Data:
                     this.consume_next_char(html);
-                }
-
-                if(this.current_input_character === ' ') {
-                    this.state = State.BeforeAttributeName;
-                } else if(this.current_input_character === '/') {
-                    this.state = State.SelfClosingStartTag; 
-                } else if (this.current_input_character === '>') {
-                    this.state = State.Data;
-                    yield this.current_tag;
-                } else {
-                    this.current_tag = {
-                        ...this.current_tag,
-                        name: this.current_tag.name + this.current_input_character
+                    const isBracket = this.current_input_character === '<';
+                    // console.log('isBracket', isBracket);
+                    const isEof = this.pos >= html.length;
+                    if(isBracket && !isEof) {
+                        this.state = State.TagOpen;
+                          // yield TokenEnum.CharacterToken
+                    } else if(isEof) {
+                        yield TokenEnum.EOFToken;
+                    } else {
+                        yield {
+                            content: this.current_input_character
+                        }
                     }
-                }
-             } else if (this.state === State.EndTagOpen) {
-                // console.log('state', this.state);
-                 this.consume_next_char(html);
-                if(this.current_input_character === '>') {
-                    this.state = State.Data;
-                } else {
-                    this.current_tag = {
-                        kind: TagKind.EndTag,
-                        name: '',
-                        attrs: [],
-                        self_closing: false
+                        break;
+                case State.TagOpen:
+                    // console.log('state', this.state);
+                    this.consume_next_char(html);
+                    if(this.current_input_character === '/') {
+                        this.state = State.EndTagOpen;
+                    } else {
+                        this.current_tag = {
+                            kind: TagKind.StartTag,
+                            name: '',
+                            self_closing: false,
+                            attrs: [],
+                        }
+                        this.shouldReconsume = true;
+                        this.state = State.TagName 
                     } 
+                    break;
+                case State.TagName:
+                    // console.log('state', this.state);
+                    if (this.shouldReconsume) {
+                        this.reconsume();
+                    } else {
+                        this.consume_next_char(html);
+                    }
+
+                    if(this.current_input_character === ' ') {
+                        this.state = State.BeforeAttributeName;
+                    } else if(this.current_input_character === '/') {
+                        this.state = State.SelfClosingStartTag; 
+                    } else if (this.current_input_character === '>') {
+                        this.state = State.Data;
+                        yield this.current_tag;
+                    } else {
+                        this.current_tag = {
+                            ...this.current_tag,
+                            name: this.current_tag.name + this.current_input_character
+                        }
+                    }
+                    break;
                     
-                    this.shouldReconsume = true;
-                    this.state = State.TagName;
-                }
-             } else {
-                 console.log('else state', this.state);
-                 this.consume_next_char(html);
-             } 
+                case State.EndTagOpen:
+                     // console.log('state', this.state);
+                     this.consume_next_char(html);
+                     if(this.current_input_character === '>') {
+                         this.state = State.Data;
+                     } else {
+                         this.current_tag = {
+                             kind: TagKind.EndTag,
+                             name: '',
+                             attrs: [],
+                             self_closing: false
+                         } 
+                         
+                         this.shouldReconsume = true;
+                         this.state = State.TagName;
+                     }
+                     break;
+                default:
+                    console.log('else state', this.state);
+                    this.consume_next_char(html);
+                    break;
+            }
         }
     }
 }
