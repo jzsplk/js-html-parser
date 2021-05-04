@@ -72,10 +72,9 @@ export class Tokenizer {
     *_tokenize(html:string): IterableIterator<Token> {
         while(this.pos < html.length) {
             if(this.state === State.Data) {
-                console.log('state', this.state);
                 this.consume_next_char(html);
                 const isBracket = this.current_input_character === '<';
-                console.log('isBracket', isBracket);
+                // console.log('isBracket', isBracket);
                 const isEof = this.pos >= html.length;
                 if(isBracket && !isEof) {
                     this.state = State.TagOpen;
@@ -88,7 +87,7 @@ export class Tokenizer {
                     }
                 }
              } else if (this.state === State.TagOpen) {
-                console.log('state', this.state);
+                // console.log('state', this.state);
                 this.consume_next_char(html);
                 if(this.current_input_character === '/') {
                     this.state = State.EndTagOpen;
@@ -103,7 +102,7 @@ export class Tokenizer {
                     this.state = State.TagName 
                 }
              } else if(this.state === State.TagName) {
-                console.log('state', this.state);
+                // console.log('state', this.state);
                 if (this.shouldReconsume) {
                     this.reconsume();
                 } else {
@@ -124,7 +123,7 @@ export class Tokenizer {
                     }
                 }
              } else if (this.state === State.EndTagOpen) {
-                console.log('state', this.state);
+                // console.log('state', this.state);
                  this.consume_next_char(html);
                 if(this.current_input_character === '>') {
                     this.state = State.Data;
@@ -140,6 +139,7 @@ export class Tokenizer {
                     this.state = State.TagName;
                 }
              } else {
+                 console.log('else state', this.state);
                  this.consume_next_char(html);
              } 
         }
@@ -147,8 +147,9 @@ export class Tokenizer {
 }
 
 export const htmlTokenizer = () => {
-    console.log('hello world');
+    console.log('demo tokenizer start...');
     const demoHtml = '<div><p>demo de</p></div>';
+    console.log('html is', demoHtml);
     const tokenizer = new Tokenizer();
 
     console.log([...tokenizer._tokenize(demoHtml)]);
