@@ -5,7 +5,7 @@
     "lerna": "^4.0.0"
   },
   "scripts": {
-    "dev-to": "lerna  exec --scope html-tokenzier -- npm run dev" 
+    "dev-to": "lerna exec --scope html-tokenizer -- yarn dev"
   },
   "workspaces": [
     "packages/*"
