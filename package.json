@@ -6,7 +6,8 @@
   },
   "scripts": {
     "dev-to": "lerna exec --scope html-tokenizer -- yarn dev",
-    "build": "tsc"
+    "build": "tsc",
+    "test": "lerna exec --scope html-tokenizer -- yarn jest"
   },
   "workspaces": [
     "packages/*"
