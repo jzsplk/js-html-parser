@@ -5,8 +5,11 @@
     "lerna": "^4.0.0"
   },
   "scripts": {
-    "dev-to": "lerna  exec --scope html-tokenzier -- yarn dev" 
+    "dev-to": "lerna  exec --scope html-tokenzier -- npm run dev" 
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "dependencies": {
     "@types/node": "^15.0.1",
     "typescript": "^4.2.4"
