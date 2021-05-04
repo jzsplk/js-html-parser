@@ -149,7 +149,7 @@ export class Tokenizer {
 export const htmlTokenizer = () => {
     console.log('hello world');
     const demoHtml = '<div><p>demo de</p></div>';
-    const TokenSink = new Tokenizer();
+    const tokenizer = new Tokenizer();
 
-    console.log([...TokenSink._tokenize(demoHtml)]);
+    console.log([...tokenizer._tokenize(demoHtml)]);
 }
