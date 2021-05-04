@@ -6,66 +6,38 @@ describe('html-tokenizer', () => {
         
         const demoHtml = '<html><div>mock content</div></html>'
         
-        expect([...tokenizer._tokenize(demoHtml)]).toEqual([
+        expect([...tokenizer.tokenize(demoHtml)]).toEqual([
                     {
                      "attrs": [],
                      "kind": "StartTag",
                      "name": "html",
                      "self_closing": false,
+                     "type": "TagToken",
                    },
                     {
                      "attrs":  [],
                      "kind": "StartTag",
                      "name": "div",
                      "self_closing": false,
+                     "type": "TagToken",
                    },
                     {
-                     "content": "m",
-                   },
-                    {
-                     "content": "o",
-                   },
-                    {
-                     "content": "c",
-                   },
-                    {
-                     "content": "k",
-                   },
-                    {
-                     "content": " ",
-                   },
-                    {
-                     "content": "c",
-                   },
-                    {
-                     "content": "o",
-                   },
-                    {
-                     "content": "n",
-                   },
-                    {
-                     "content": "t",
-                   },
-                    {
-                     "content": "e",
-                   },
-                    {
-                     "content": "n",
-                   },
-                    {
-                     "content": "t",
+                     "content": "mock content",
+                     "type": "CharacterToken",
                    },
                     {
                      "attrs":  [],
                      "kind": "EndTag",
                      "name": "div",
                      "self_closing": false,
+                     "type": "TagToken",
                    },
                     {
                      "attrs": [],
                      "kind": "EndTag",
                      "name": "html",
                      "self_closing": false,
+                     "type": "TagToken",
                    },
                  
         ])
