@@ -22,7 +22,7 @@ describe("html-tokenizer", () => {
         type: "TagToken",
       },
       {
-        content: "mock content",
+        data: "mock content",
         type: "CharacterToken",
       },
       {
@@ -61,7 +61,7 @@ describe("html-tokenizer", () => {
         type: "TagToken",
       },
       {
-        content: "mock content",
+        data: "mock content",
         type: "CharacterToken",
       },
       {

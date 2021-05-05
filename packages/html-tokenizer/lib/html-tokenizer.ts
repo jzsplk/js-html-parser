@@ -1,4 +1,5 @@
 import { State } from "./state";
+import {isAsciiLetter} from './utils'
 
 export enum TokenEnum {
   EOFToken = "EOFToken",
@@ -131,7 +132,7 @@ export class Tokenizer {
           this.consume_next_char(html);
           if (this.current_input_character === "/") {
             this.state = State.EndTagOpen;
-          } else {
+          } else if(isAsciiLetter(this.current_input_character)) {
             this.current_tag = {
               type: TokenEnum.TagToken,
               kind: TagKind.StartTag,
@@ -141,6 +142,9 @@ export class Tokenizer {
             };
             this.shouldReconsume = true;
             this.state = State.TagName;
+          } else {
+            this.shouldReconsume = true;
+            this.state = State.Data;
           }
           break;
         case State.TagName:
