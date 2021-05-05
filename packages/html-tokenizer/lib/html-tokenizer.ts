@@ -28,7 +28,7 @@ export interface Tag {
 
 export interface CharacterToken {
   type: TokenEnum.CharacterToken;
-  content: string;
+  data: string;
 }
 
 export interface EOFToken {
@@ -90,7 +90,7 @@ export class Tokenizer {
     let currentText;
     for (const tkn of this._tokenize(html)) {
       if (tkn.type === TokenEnum.CharacterToken) {
-        const text = tkn.content;
+        const text = tkn.data;
         if (currentText === undefined) {
           currentText = text;
         } else {
@@ -100,7 +100,7 @@ export class Tokenizer {
         if (currentText) {
           yield {
             type: TokenEnum.CharacterToken,
-            content: currentText,
+            data: currentText,
           };
           currentText = undefined;
         }
@@ -125,7 +125,7 @@ export class Tokenizer {
           } else {
             yield {
               type: TokenEnum.CharacterToken,
-              content: this.current_input_character,
+              data: this.current_input_character,
             };
           }
           break;
