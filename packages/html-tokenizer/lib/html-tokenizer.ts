@@ -35,10 +35,20 @@ export interface EOFToken {
   type: TokenEnum.EOFToken;
 }
 
+export interface TokenizerOptions {}
+
 export class Tokenizer {
   static tokenize(html: string, options = {}) {
-    const tokenizer = new Tokenizer();
-    return [...tokenizer.tokenize(html)];
+    const tokenizer = new Tokenizer(options);
+    return tokenizer.tokenize(html);
+  }
+
+  /**
+   * Static factory to create a tokenizer.
+   * @param opts Tokenizer options.
+   */
+  static from(opts: TokenizerOptions) {
+    return new Tokenizer(opts);
   }
 
   // static from(options) {
@@ -52,7 +62,7 @@ export class Tokenizer {
   current_tag: Tag;
   shouldReconsume: boolean;
 
-  constructor() {
+  constructor(opts: TokenizerOptions) {
     this.state = State.Data;
     this.at_eof = false;
     this.shouldReconsume = false;
@@ -192,7 +202,7 @@ export const htmlTokenizer = () => {
     <p>demo content</p>
     </div>`;
   console.log("html is", demoHtml);
-  const tokenizer = new Tokenizer();
+  const tokenizer = new Tokenizer({});
 
   console.log([...tokenizer.tokenize(demoHtml)]);
 };

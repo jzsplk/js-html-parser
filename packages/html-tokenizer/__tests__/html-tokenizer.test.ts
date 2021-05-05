@@ -2,7 +2,7 @@ import { Tokenizer } from "../lib/html-tokenizer";
 
 describe("html-tokenizer", () => {
   it("should return right open tag and end tag and char", () => {
-    const tokenizer = new Tokenizer();
+    const tokenizer = Tokenizer.from({});
 
     const demoHtml = "<html><div>mock content</div></html>";
 
@@ -45,7 +45,7 @@ describe("html-tokenizer", () => {
   it("should return right token with tokenize method", () => {
     const demoHtml = "<html><div>mock content</div></html>";
 
-    expect(Tokenizer.tokenize(demoHtml)).toEqual([
+    expect([...Tokenizer.tokenize(demoHtml)]).toEqual([
       {
         attrs: [],
         kind: "StartTag",
