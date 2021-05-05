@@ -51,9 +51,6 @@ export class Tokenizer {
     return new Tokenizer(opts);
   }
 
-  // static from(options) {
-
-  // }
   state: State = State.Data;
   at_eof: boolean;
   pos: number = 0;
