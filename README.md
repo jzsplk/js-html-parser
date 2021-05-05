@@ -11,7 +11,7 @@ const demoHtml = '<div><p>demo text</p></div>';
 
 console.log([...tokenizer.tokenize(demoHtml)]);
 
-console.log(Tokenizer.tokenize(html));
+console.log([...Tokenizer.tokenize(html)]);
 
 ```
 
