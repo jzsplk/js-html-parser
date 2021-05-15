@@ -76,12 +76,20 @@ export class Tokenizer {
   }
 
   consume_next_char(html: string) {
-    this.current_input_character = html[this.pos];
-    this.pos += 1;
+    if(this.shouldReconsume) {
+      this.shouldReconsume = false;
+    } else {
+      this.current_input_character = html[this.pos];
+      this.pos += 1;
+    }
   }
 
   reconsume() {
-    this.shouldReconsume = false;
+    this.shouldReconsume = true;
+  }
+  
+  ignore_char() {
+    this.pos += 1;
   }
 
   *tokenize(html: string): IterableIterator<Token> {
@@ -140,20 +148,16 @@ export class Tokenizer {
               self_closing: false,
               attrs: [],
             };
-            this.shouldReconsume = true;
+            this.reconsume();
             this.state = State.TagName;
           } else {
-            this.shouldReconsume = true;
+            this.reconsume();
             this.state = State.Data;
           }
           break;
         case State.TagName:
           // console.log('state', this.state);
-          if (this.shouldReconsume) {
-            this.reconsume();
-          } else {
-            this.consume_next_char(html);
-          }
+          this.consume_next_char(html);
 
           if (this.current_input_character === " ") {
             this.state = State.BeforeAttributeName;
@@ -184,10 +188,31 @@ export class Tokenizer {
               self_closing: false,
             };
 
-            this.shouldReconsume = true;
+            this.reconsume();
             this.state = State.TagName;
           }
           break;
+        case State.BeforeAttributeName:
+          this.consume_next_char(html);
+          // tab LF FF space
+          const ignoreChars = [0x0009, 0x000A,0x000C, 0x0020];
+          // / > 
+          const afterNameChars = [0x002f, 0x003e];
+          if(ignoreChars.map(c => String.fromCharCode(c)).includes(this.current_input_character)) {
+            // this.state = State.BeforeAttributeName;
+          } else if(afterNameChars.map(c => String.fromCharCode(c)).includes(this.current_input_character)) {
+            this.state = State.AfterAttributeName;
+            this.reconsume()
+          } else {
+            this.state = State.AttributeName;
+            this.reconsume();
+          }
+          break;  
+        case State.AttributeName:
+          this.consume_next_char(html);
+
+          break;
+        
         default:
           console.log("else state", this.state);
           this.consume_next_char(html);
