@@ -1,5 +1,8 @@
+const util = require('util')
+
+import {WHITE_SPACES} from './constants/charSet'
 import { State } from "./state";
-import {isAsciiLetter} from './utils'
+import {isAsciiLetter,fromCharSet} from './utils'
 
 export enum TokenEnum {
   EOFToken = "EOFToken",
@@ -16,7 +19,7 @@ export enum TagKind {
 }
 
 export interface Attribute {
-  [name: string]: string;
+  [name: string]: any;
 }
 
 export interface Tag {
@@ -25,6 +28,7 @@ export interface Tag {
   name: string;
   self_closing: boolean;
   attrs: Attribute[];
+  toString: any;
 }
 
 export interface CharacterToken {
@@ -57,6 +61,8 @@ export class Tokenizer {
   pos: number = 0;
   current_input_character: string;
   current_tag_name: string;
+  current_attribute_name: string;
+  current_attribute_value: string;
   current_tag: Tag;
   shouldReconsume: boolean;
 
@@ -66,6 +72,8 @@ export class Tokenizer {
     this.shouldReconsume = false;
     (this.pos = 0), (this.current_input_character = "");
     this.current_tag_name = "";
+    this.current_attribute_name = "";
+    this.current_attribute_value = "";
     this.current_tag = {
       type: TokenEnum.TagToken,
       kind: TagKind.StartTag,
@@ -193,14 +201,22 @@ export class Tokenizer {
           }
           break;
         case State.BeforeAttributeName:
+          if(this.current_attribute_name && this.current_attribute_value) {
+            this.current_tag.attrs.push({
+              [this.current_attribute_name]: this.current_attribute_value
+            })
+          }
+          this.current_attribute_name = '';
+          this.current_attribute_value = '';
+
           this.consume_next_char(html);
           // tab LF FF space
-          const ignoreChars = [0x0009, 0x000A,0x000C, 0x0020];
+          const ignoreChars = WHITE_SPACES;
           // / > 
           const afterNameChars = [0x002f, 0x003e];
-          if(ignoreChars.map(c => String.fromCharCode(c)).includes(this.current_input_character)) {
-            // this.state = State.BeforeAttributeName;
-          } else if(afterNameChars.map(c => String.fromCharCode(c)).includes(this.current_input_character)) {
+          if([...fromCharSet(ignoreChars)].includes(this.current_input_character)) {
+            // ignore
+          } else if([...fromCharSet(afterNameChars)].includes(this.current_input_character)) {
             this.state = State.AfterAttributeName;
             this.reconsume()
           } else {
@@ -210,7 +226,87 @@ export class Tokenizer {
           break;  
         case State.AttributeName:
           this.consume_next_char(html);
+          // tab, LF, FF, SPACE, (/), (>)
+          const goToAfterAttributeStateCharSet = [0x0009, 0x000A, 0x000C, 0x0020, 0x002F, 0x003E];
+          // =
+          const goToBeforeAttributeCharSet = [0x003D];
+          
+          // (") (') (<)
+          const inAttributeNameErrorCharSet = [0x0022, 0x0027, 0x003C];
+          if([...fromCharSet(goToAfterAttributeStateCharSet)].includes(this.current_input_character)) {
+            this.state = State.AfterAttributeName;
+            this.reconsume();
+          } else if([...fromCharSet(goToBeforeAttributeCharSet)].includes(this.current_input_character)) {
+            this.state = State.BeforeAttributeValue; 
+          } else if (isAsciiLetter(this.current_input_character)) {
+              this.current_attribute_name += this.current_input_character.toLowerCase();
+          } else if([...fromCharSet([0x0000])].includes(this.current_input_character)) {
+            // This is an unexpected-null-character parse error. Append a U+FFFD REPLACEMENT CHARACTER character to the current attribute's name.
+            this.current_attribute_name += String.fromCharCode(0xFFFD);
+          } else if([...fromCharSet(inAttributeNameErrorCharSet)].includes(this.current_input_character)) {
+            this.current_attribute_name += this.current_input_character;
+          } else {
+            this.current_attribute_name += this.current_input_character;
+          }
+            
+          break;
+          
+        case State.BeforeAttributeValue:
+          this.consume_next_char(html);
+        
+          if([...fromCharSet(WHITE_SPACES)].includes(this.current_input_character)) {
+            // ignore
+          } else if ([...fromCharSet([0x0022])].includes(this.current_input_character)) {
+            this.state = State.AttributeValueDoubleQuotedState;
+          } else if([...fromCharSet([0x0027])].includes(this.current_input_character)) {
+            this.state = State.AttributeValueSingleQuotedState;
+          } // This is a missing-attribute-value parse error. Switch to the data state. Emit the current tag token.
+            else if([...fromCharSet([0x003E])].includes(this.current_input_character)) {
+            console.error('missing attribute value parse error');
+          } else {
+            this.state = State.AttributeValueUnquotedState;
+            this.reconsume();
+          }
+          break;
+          
+        case State.AttributeValueDoubleQuotedState:
+          this.consume_next_char(html);
+          // TODO
+          // (")
+          if([...fromCharSet([0x0022])].includes(this.current_input_character)) {
+            this.state = State.AfterAttributeValueQuotedState;
+          } else if ([...fromCharSet([0x0026])].includes(this.current_input_character)) {
+            // TODO
+            // Set the return state to the attribute value (double-quoted) state. Switch to the character reference state.     }
+          } else if([...fromCharSet([0x0000])].includes(this.current_input_character)) {
+            // TODO
+            // This is an unexpected-null-character parse error. Append a U+FFFD REPLACEMENT CHARACTER character to the current attribute's value.
+            this.current_attribute_value += String.fromCharCode(0xFFFD);
+          } else {
+            this.current_attribute_value += this.current_input_character;
+          }
+          break;
+          
+        case State.AfterAttributeValueQuotedState:
+          this.consume_next_char(html);
+          if([...fromCharSet(WHITE_SPACES)].includes(this.current_input_character)) {
+            this.state = State.BeforeAttributeName;
+          } // (/)
+            else if([...fromCharSet([0x002F])].includes(this.current_input_character)) {
+            this.state = State.SelfClosingStartTag;
+          } // (>)
+            else if([...fromCharSet([0x003E])].includes(this.current_input_character)) {
+              this.state = State.Data;
+              const extraAttribute = {
+                [this.current_attribute_name]: this.current_attribute_value,
+              }
 
+              this.current_tag = {
+                ...this.current_tag,
+                attrs: [...this.current_tag.attrs, extraAttribute],
+              }
+              yield this.current_tag; 
+          }
           break;
         
         default:
@@ -225,10 +321,10 @@ export class Tokenizer {
 export const htmlTokenizer = () => {
   console.log("demo tokenizer start...");
   const demoHtml = `<div>
-    <p>demo content</p>
+    <p class="tt" color="red">demo content</p>
     </div>`;
   console.log("html is", demoHtml);
   const tokenizer = new Tokenizer({});
 
-  console.log([...tokenizer.tokenize(demoHtml)]);
+  console.log(util.inspect([...tokenizer.tokenize(demoHtml)], false, null, true /* enable colors */))
 };
