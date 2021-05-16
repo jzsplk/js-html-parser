@@ -27,7 +27,6 @@ export interface Tag {
   name: string;
   self_closing: boolean;
   attrs: Attribute[];
-  toString: any;
 }
 
 export interface CharacterToken {
