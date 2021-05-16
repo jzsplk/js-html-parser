@@ -1,16 +1,13 @@
 import util from 'util'
 import {WHITE_SPACES} from './constants/charSet'
 import { State } from "./state";
-import {isAsciiLetter,fromCharSet} from './utils'
+import {isAsciiLetter,fromCharSet,logDeep} from './utils'
 import {TopLevelToken} from './tokens/tokens'
 import {CharacterToken} from './tokens/CharacterToken'
 import {HtmlTagToken,TagTokenEnum} from './tokens/htmlTagToken'
 import {EOFToken} from './tokens/EOFToken' 
 import {TokenKind} from './types'
 
-const logDeep = (target: any) => {
-  console.log(util.inspect(target, false, null, true));
-}
 
 export interface Attribute {
   [name: string]: any;
@@ -42,7 +39,6 @@ export class Tokenizer {
   current_tag_name: string;
   current_attribute_name: string;
   current_attribute_value: string;
-  // current_tag: Tag;
   current_tag: HtmlTagToken;
   shouldReconsume: boolean;
 
@@ -58,13 +54,6 @@ export class Tokenizer {
     this.current_attribute_name = "";
     this.current_attribute_value = "";
     this.input = input;
-    // this.current_tag = {
-    //   type: TokenEnum.TagToken,
-    //   kind: TagKind.StartTag,
-    //   name: "",
-    //   self_closing: false,
-    //   attrs: [],
-    // };
     this.current_tag = new HtmlTagToken({
       name: '',
       attributes: [],
@@ -122,12 +111,6 @@ export class Tokenizer {
         }
       } else {
         if (currentText) {
-          // yield {
-          //   type: TokenEnum.CharacterToken,
-          //   data: currentText,
-          // };
-          //
-          // TODO: add position logic
           yield new CharacterToken(this.input, this.text_begin_pos, this.text_end_pos, currentText);
           currentText = undefined;
         }
@@ -147,17 +130,12 @@ export class Tokenizer {
           if (isBracket && !isEof) {
             this.state = State.TagOpen;
           } else if (isEof) {
-            // yield { type: TokenEnum.EOFToken };
             yield new EOFToken(
               this.input,
               this.pos,
               this.pos,
             )
           } else {
-            // yield {
-            //   type: TokenEnum.CharacterToken,
-            //   data: this.current_input_character,
-            // };
             yield new CharacterToken(this.input, this.pos, this.pos, this.current_input_character);
           }
           break;
@@ -166,13 +144,6 @@ export class Tokenizer {
           if (this.current_input_character === "/") {
             this.state = State.EndTagOpen;
           } else if(isAsciiLetter(this.current_input_character)) {
-            // this.current_tag = {
-            //   type: TokenEnum.TagToken,
-            //   kind: TagKind.StartTag,
-            //   name: "",
-            //   self_closing: false,
-            //   attributes: [],
-            // };
             this.reset_current_tag();
             this.reconsume();
             this.state = State.TagName;
@@ -194,10 +165,6 @@ export class Tokenizer {
             this.current_tag.updateEndPos(this.pos);
             yield this.current_tag;
           } else {
-            // this.current_tag = {
-            //   ...this.current_tag,
-            //   name: this.current_tag.name + this.current_input_character,
-            // };
             this.current_tag.appendName(this.current_input_character);
           }
           break;
@@ -207,14 +174,6 @@ export class Tokenizer {
           if (this.current_input_character === ">") {
             this.state = State.Data;
           } else {
-            // this.current_tag = {
-            //   type: TokenEnum.TagToken,
-            //   kind: TagKind.EndTag,
-            //   name: "",
-            //   attrs: [],
-            //   self_closing: false,
-            // };
-            // 
             this.current_tag = new HtmlTagToken({
               name: '',
               input: this.input,
@@ -330,13 +289,9 @@ export class Tokenizer {
                 [this.current_attribute_name]: this.current_attribute_value,
               }
 
-              // this.current_tag = {
-              //   ...this.current_tag,
-              //   attributes: [...this.current_tag.attributes, extraAttribute],
-              // }
               this.current_tag.addAttribute(extraAttribute);
-
               this.current_tag.updateEndPos(this.pos);
+              // emit tag token
               yield this.current_tag; 
           }
           break;
@@ -358,5 +313,5 @@ export const htmlTokenizer = () => {
   console.log("html is", demoHtml);
   const tokenizer = new Tokenizer(demoHtml, {});
 
-  logDeep([...tokenizer.tokenize(demoHtml)].map(token => token.getText()));
+  logDeep([...tokenizer.tokenize(demoHtml)]);
 };

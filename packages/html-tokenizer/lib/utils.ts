@@ -1,3 +1,5 @@
+import util from 'util';
+
 export const isAsciiLetter = (str: string):boolean => {
     return str.length === 1 && Boolean(/[a-zA-Z]/i.exec(str));
 } 
@@ -8,3 +10,8 @@ export const fromCharSet = (charCodes: number[]): Set<string> => {
     
     return charSet;
 }
+
+export const logDeep = (target: any) => {
+    console.log(util.inspect(target, false, null, true));
+}
+  
