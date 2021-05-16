@@ -145,11 +145,9 @@ export class Tokenizer {
           this.consume_next_char(html);
           this.reset_current_tag();
           const isBracket = this.current_input_character === "<";
-          // console.log('isBracket', isBracket);
           const isEof = this.pos >= html.length;
           if (isBracket && !isEof) {
             this.state = State.TagOpen;
-            // yield TokenEnum.CharacterToken
           } else if (isEof) {
             yield { type: TokenEnum.EOFToken };
           } else {
