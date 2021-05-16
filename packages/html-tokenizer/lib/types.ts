@@ -5,3 +5,10 @@
  export interface Entities {
     [name: string]: string;
   }
+  
+export enum TokenKind {
+  EOFToken = "EOFToken",
+  CommentToken = "CommentToken",
+  CharacterToken = "CharacterToken",
+  HtmlTagToken = "HtmlTagToken",
+}
