@@ -7,5 +7,10 @@ export enum State {
     TagName = 'TagName',
     AttributeName = "AttributeName",
     AfterAttributeName = 'AfterAttributeName',
-    BeforeAttributeName = 'BeforeAttributeName'
+    BeforeAttributeName = 'BeforeAttributeName',
+    BeforeAttributeValue = 'BeforeAttributeValue',
+    AttributeValueDoubleQuotedState = "AttributeValueDoubleQuotedState",
+    AttributeValueSingleQuotedState = "AttributeValueSingleQuotedState",
+    AttributeValueUnquotedState = "AttributeValueUnquotedState",
+    AfterAttributeValueQuotedState = "AfterAttributeValueQuotedState"
 }
