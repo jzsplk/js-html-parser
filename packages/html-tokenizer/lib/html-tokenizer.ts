@@ -1,5 +1,4 @@
-const util = require('util')
-
+import util from 'util'
 import {WHITE_SPACES} from './constants/charSet'
 import { State } from "./state";
 import {isAsciiLetter,fromCharSet} from './utils'
