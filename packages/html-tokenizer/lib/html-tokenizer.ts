@@ -2,51 +2,25 @@ import util from 'util'
 import {WHITE_SPACES} from './constants/charSet'
 import { State } from "./state";
 import {isAsciiLetter,fromCharSet} from './utils'
+import {TopLevelToken} from './tokens/tokens'
+import {CharacterToken} from './tokens/CharacterToken'
+import {HtmlTagToken,TagTokenEnum} from './tokens/htmlTagToken'
+import {EOFToken} from './tokens/EOFToken' 
+import {TokenKind} from './types'
 
 const logDeep = (target: any) => {
   console.log(util.inspect(target, false, null, true));
-}
-
-export enum TokenEnum {
-  EOFToken = "EOFToken",
-  CommentToken = "CommentToken",
-  CharacterToken = "CharacterToken",
-  TagToken = "TagToken",
-}
-
-export type Token = Tag | EOFToken | CharacterToken;
-
-export enum TagKind {
-  StartTag = "StartTag",
-  EndTag = "EndTag",
 }
 
 export interface Attribute {
   [name: string]: any;
 }
 
-export interface Tag {
-  type: TokenEnum.TagToken;
-  kind: TagKind;
-  name: string;
-  self_closing: boolean;
-  attrs: Attribute[];
-}
-
-export interface CharacterToken {
-  type: TokenEnum.CharacterToken;
-  data: string;
-}
-
-export interface EOFToken {
-  type: TokenEnum.EOFToken;
-}
-
 export interface TokenizerOptions {}
 
 export class Tokenizer {
   static tokenize(html: string, options = {}) {
-    const tokenizer = new Tokenizer(options);
+    const tokenizer = new Tokenizer(html, options);
     return tokenizer.tokenize(html);
   }
 
@@ -54,45 +28,64 @@ export class Tokenizer {
    * Static factory to create a tokenizer.
    * @param opts Tokenizer options.
    */
-  static from(opts: TokenizerOptions) {
-    return new Tokenizer(opts);
+  static from(input: string, opts: TokenizerOptions) {
+    return new Tokenizer(input, opts);
   }
 
+  input: string;
   state: State = State.Data;
   at_eof: boolean;
   pos: number = 0;
+  text_begin_pos: number = 0;
+  text_end_pos: number = 0;
   current_input_character: string;
   current_tag_name: string;
   current_attribute_name: string;
   current_attribute_value: string;
-  current_tag: Tag;
+  // current_tag: Tag;
+  current_tag: HtmlTagToken;
   shouldReconsume: boolean;
 
-  constructor(opts: TokenizerOptions) {
+  constructor(input: string, opts: TokenizerOptions) {
     this.state = State.Data;
     this.at_eof = false;
     this.shouldReconsume = false;
+    this.text_begin_pos = 0;
+    this.text_end_pos = 0;
+
     (this.pos = 0), (this.current_input_character = "");
     this.current_tag_name = "";
     this.current_attribute_name = "";
     this.current_attribute_value = "";
-    this.current_tag = {
-      type: TokenEnum.TagToken,
-      kind: TagKind.StartTag,
-      name: "",
+    this.input = input;
+    // this.current_tag = {
+    //   type: TokenEnum.TagToken,
+    //   kind: TagKind.StartTag,
+    //   name: "",
+    //   self_closing: false,
+    //   attrs: [],
+    // };
+    this.current_tag = new HtmlTagToken({
+      name: '',
+      attributes: [],
+      begin: this.pos,
+      end: this.pos,
+      input: this.input,
       self_closing: false,
-      attrs: [],
-    };
+      type: TagTokenEnum.StartTag
+    })
   }
   
   reset_current_tag() {
-    this.current_tag = {
-      type: TokenEnum.TagToken,
-      kind: TagKind.StartTag,
-      name: "",
+    this.current_tag = new HtmlTagToken({
+      name: '',
+      attributes: [],
+      begin: this.pos - 2,
+      end: this.pos,
+      input: this.input,
       self_closing: false,
-      attrs: [],
-    }
+      type: TagTokenEnum.StartTag
+    });
     this.current_attribute_name = '';
     this.current_attribute_value = '';
     this.current_tag_name = '';
@@ -115,22 +108,27 @@ export class Tokenizer {
     this.pos += 1;
   }
 
-  *tokenize(html: string): IterableIterator<Token> {
+  *tokenize(html: string): IterableIterator<TopLevelToken> {
     let currentText;
     for (const tkn of this._tokenize(html)) {
-      if (tkn.type === TokenEnum.CharacterToken) {
-        const text = tkn.data;
+      if (tkn.kind === TokenKind.CharacterToken) {
+        const text = (tkn as CharacterToken).data;
         if (currentText === undefined) {
+          this.text_begin_pos = tkn.begin - 1;
           currentText = text;
         } else {
           currentText += text;
+          this.text_end_pos = tkn.end;
         }
       } else {
         if (currentText) {
-          yield {
-            type: TokenEnum.CharacterToken,
-            data: currentText,
-          };
+          // yield {
+          //   type: TokenEnum.CharacterToken,
+          //   data: currentText,
+          // };
+          //
+          // TODO: add position logic
+          yield new CharacterToken(this.input, this.text_begin_pos, this.text_end_pos, currentText);
           currentText = undefined;
         }
         yield tkn;
@@ -138,7 +136,7 @@ export class Tokenizer {
     }
   }
 
-  private *_tokenize(html: string): IterableIterator<Token> {
+  private *_tokenize(html: string): IterableIterator<TopLevelToken> {
     while (this.pos < html.length) {
       switch (this.state) {
         case State.Data:
@@ -149,12 +147,18 @@ export class Tokenizer {
           if (isBracket && !isEof) {
             this.state = State.TagOpen;
           } else if (isEof) {
-            yield { type: TokenEnum.EOFToken };
+            // yield { type: TokenEnum.EOFToken };
+            yield new EOFToken(
+              this.input,
+              this.pos,
+              this.pos,
+            )
           } else {
-            yield {
-              type: TokenEnum.CharacterToken,
-              data: this.current_input_character,
-            };
+            // yield {
+            //   type: TokenEnum.CharacterToken,
+            //   data: this.current_input_character,
+            // };
+            yield new CharacterToken(this.input, this.pos, this.pos, this.current_input_character);
           }
           break;
         case State.TagOpen:
@@ -162,13 +166,14 @@ export class Tokenizer {
           if (this.current_input_character === "/") {
             this.state = State.EndTagOpen;
           } else if(isAsciiLetter(this.current_input_character)) {
-            this.current_tag = {
-              type: TokenEnum.TagToken,
-              kind: TagKind.StartTag,
-              name: "",
-              self_closing: false,
-              attrs: [],
-            };
+            // this.current_tag = {
+            //   type: TokenEnum.TagToken,
+            //   kind: TagKind.StartTag,
+            //   name: "",
+            //   self_closing: false,
+            //   attributes: [],
+            // };
+            this.reset_current_tag();
             this.reconsume();
             this.state = State.TagName;
           } else {
@@ -185,12 +190,15 @@ export class Tokenizer {
             this.state = State.SelfClosingStartTag;
           } else if (this.current_input_character === ">") {
             this.state = State.Data;
+
+            this.current_tag.updateEndPos(this.pos);
             yield this.current_tag;
           } else {
-            this.current_tag = {
-              ...this.current_tag,
-              name: this.current_tag.name + this.current_input_character,
-            };
+            // this.current_tag = {
+            //   ...this.current_tag,
+            //   name: this.current_tag.name + this.current_input_character,
+            // };
+            this.current_tag.appendName(this.current_input_character);
           }
           break;
 
@@ -199,13 +207,23 @@ export class Tokenizer {
           if (this.current_input_character === ">") {
             this.state = State.Data;
           } else {
-            this.current_tag = {
-              type: TokenEnum.TagToken,
-              kind: TagKind.EndTag,
-              name: "",
-              attrs: [],
+            // this.current_tag = {
+            //   type: TokenEnum.TagToken,
+            //   kind: TagKind.EndTag,
+            //   name: "",
+            //   attrs: [],
+            //   self_closing: false,
+            // };
+            // 
+            this.current_tag = new HtmlTagToken({
+              name: '',
+              input: this.input,
+              type: TagTokenEnum.EndTag,
               self_closing: false,
-            };
+              attributes: [],
+              begin: this.pos - 3,
+              end: this.pos,
+            })
 
             this.reconsume();
             this.state = State.TagName;
@@ -213,7 +231,7 @@ export class Tokenizer {
           break;
         case State.BeforeAttributeName:
           if(this.current_attribute_name && this.current_attribute_value) {
-            this.current_tag.attrs.push({
+            this.current_tag.attributes.push({
               [this.current_attribute_name]: this.current_attribute_value
             })
           }
@@ -312,10 +330,13 @@ export class Tokenizer {
                 [this.current_attribute_name]: this.current_attribute_value,
               }
 
-              this.current_tag = {
-                ...this.current_tag,
-                attrs: [...this.current_tag.attrs, extraAttribute],
-              }
+              // this.current_tag = {
+              //   ...this.current_tag,
+              //   attributes: [...this.current_tag.attributes, extraAttribute],
+              // }
+              this.current_tag.addAttribute(extraAttribute);
+
+              this.current_tag.updateEndPos(this.pos);
               yield this.current_tag; 
           }
           break;
@@ -332,10 +353,10 @@ export class Tokenizer {
 export const htmlTokenizer = () => {
   console.log("demo tokenizer start...");
   const demoHtml = `<div class="px4" id="main">
-    <p class="flex" id="xxx">demo content</p>
+    <p class="flex" id="xxx"> demo content </p>
     </div>`;
   console.log("html is", demoHtml);
-  const tokenizer = new Tokenizer({});
+  const tokenizer = new Tokenizer(demoHtml, {});
 
-  logDeep([...tokenizer.tokenize(demoHtml)]);
+  logDeep([...tokenizer.tokenize(demoHtml)].map(token => token.getText()));
 };
