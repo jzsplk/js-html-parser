@@ -3,6 +3,10 @@ import {WHITE_SPACES} from './constants/charSet'
 import { State } from "./state";
 import {isAsciiLetter,fromCharSet} from './utils'
 
+const logDeep = (target: any) => {
+  console.log(util.inspect(target, false, null, true));
+}
+
 export enum TokenEnum {
   EOFToken = "EOFToken",
   CommentToken = "CommentToken",
@@ -80,6 +84,19 @@ export class Tokenizer {
       attrs: [],
     };
   }
+  
+  reset_current_tag() {
+    this.current_tag = {
+      type: TokenEnum.TagToken,
+      kind: TagKind.StartTag,
+      name: "",
+      self_closing: false,
+      attrs: [],
+    }
+    this.current_attribute_name = '';
+    this.current_attribute_value = '';
+    this.current_tag_name = '';
+  }
 
   consume_next_char(html: string) {
     if(this.shouldReconsume) {
@@ -126,6 +143,7 @@ export class Tokenizer {
       switch (this.state) {
         case State.Data:
           this.consume_next_char(html);
+          this.reset_current_tag();
           const isBracket = this.current_input_character === "<";
           // console.log('isBracket', isBracket);
           const isEof = this.pos >= html.length;
@@ -142,7 +160,6 @@ export class Tokenizer {
           }
           break;
         case State.TagOpen:
-          // console.log('state', this.state);
           this.consume_next_char(html);
           if (this.current_input_character === "/") {
             this.state = State.EndTagOpen;
@@ -162,7 +179,6 @@ export class Tokenizer {
           }
           break;
         case State.TagName:
-          // console.log('state', this.state);
           this.consume_next_char(html);
 
           if (this.current_input_character === " ") {
@@ -181,7 +197,6 @@ export class Tokenizer {
           break;
 
         case State.EndTagOpen:
-          // console.log('state', this.state);
           this.consume_next_char(html);
           if (this.current_input_character === ">") {
             this.state = State.Data;
@@ -318,11 +333,11 @@ export class Tokenizer {
 
 export const htmlTokenizer = () => {
   console.log("demo tokenizer start...");
-  const demoHtml = `<div>
-    <p class="tt" color="red">demo content</p>
+  const demoHtml = `<div class="px4" id="main">
+    <p class="flex" id="xxx">demo content</p>
     </div>`;
   console.log("html is", demoHtml);
   const tokenizer = new Tokenizer({});
 
-  console.log(util.inspect([...tokenizer.tokenize(demoHtml)], false, null, true /* enable colors */))
+  logDeep([...tokenizer.tokenize(demoHtml)]);
 };
