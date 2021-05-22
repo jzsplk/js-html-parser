@@ -25,7 +25,8 @@
     "url": "git+https://github.com/jzsplk/js-html-parser.git"
   },
   "scripts": {
-    "dev": "ts-node ./lib/index.ts",
+    "dev:tk": "ts-node ./lib/index.ts",
+    "dev:tb": "ts-node ./lib/treebuilder/index.ts",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {
