@@ -2,10 +2,11 @@
   "name": "root",
   "private": true,
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "lerna": "^4.0.0",
+    "prettier": "^2.3.0"
   },
   "scripts": {
-    "dev-to": "lerna exec --scope html-tokenizer -- yarn dev",
+    "dev": "lerna exec --scope html-tokenizer -- yarn dev",
     "build": "tsc",
     "test": "lerna exec --scope html-tokenizer -- yarn jest"
   },
