@@ -12,3 +12,10 @@ export enum TokenKind {
   CharacterToken = "CharacterToken",
   HtmlTagToken = "HtmlTagToken",
 }
+  
+export enum ProcessTokenResult {
+  Continue = "Continue",
+  Script = "Script",
+  Plaintext = "Plaintext",
+  RawData = "RawData",
+}
