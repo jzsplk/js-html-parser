@@ -1,0 +1,33 @@
+{
+  "name": "tree-constructor",
+  "version": "0.0.0",
+  "description": "tree constructor use token to generate dom tree",
+  "keywords": [
+    "dom",
+    "tree",
+    "html",
+    "constructor",
+    "tree-builder"
+  ],
+  "author": "jzsplk <jzsplking@gmail.com>",
+  "homepage": "https://github.com/jzsplk/js-html-parser#readme",
+  "license": "MIT",
+  "main": "lib/tree-constructor.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jzsplk/js-html-parser.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/jzsplk/js-html-parser/issues"
+  }
+}
