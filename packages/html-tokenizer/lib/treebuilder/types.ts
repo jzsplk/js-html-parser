@@ -1,9 +1,9 @@
 export enum ProcessResult {
-    Done,
-    DoneAckSelfClosing,
-    SplitWhitespace,
-    Reprocess,
-    ReprocessForeign,
-    Script,
-    ToPlaintext
+    Done = 'Done',
+    DoneAckSelfClosing  = "DoneAckSelfClosing",
+    SplitWhitespace = "SplitWhitespace" ,
+    Reprocess = "Reprocess",
+    ReprocessForeign = "ReprocessForeign",
+    Script = "Script",
+    ToPlaintext = "ToPlaintext"
 }
