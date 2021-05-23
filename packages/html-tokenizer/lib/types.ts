@@ -1,3 +1,4 @@
+import {TopLevelToken} from  './tokens/tokens'
 /**
  * A map of entity names to their character values. Passed
  * to a parser or tokenizer on instantiation.
@@ -12,8 +13,13 @@ export enum TokenKind {
   CharacterToken = "CharacterToken",
   HtmlTagToken = "HtmlTagToken",
 }
+
+export interface TokenSink {
+  process_token(token: TopLevelToken): TokenSinkResult,
+  end(): void 
+}
   
-export enum ProcessTokenResult {
+export enum TokenSinkResult {
   Continue = "Continue",
   Script = "Script",
   Plaintext = "Plaintext",
