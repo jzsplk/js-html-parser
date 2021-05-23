@@ -6,7 +6,7 @@ import {TopLevelToken} from './tokens/tokens'
 import {CharacterToken} from './tokens/CharacterToken'
 import {HtmlTagToken,TagTokenEnum} from './tokens/htmlTagToken'
 import {EOFToken} from './tokens/EOFToken' 
-import {TokenKind} from './types'
+import {TokenKind,TokenSink,TokenSinkResult} from './types'
 
 
 export interface Attribute {
@@ -16,8 +16,8 @@ export interface Attribute {
 export interface TokenizerOptions {}
 
 export class Tokenizer {
-  static tokenize(html: string, options = {}) {
-    const tokenizer = new Tokenizer(html, options);
+  static tokenize(sink: TokenSink,html: string, options = {}) {
+    const tokenizer = new Tokenizer(sink, html, options);
     return tokenizer.tokenize(html);
   }
 
@@ -25,8 +25,8 @@ export class Tokenizer {
    * Static factory to create a tokenizer.
    * @param opts Tokenizer options.
    */
-  static from(input: string, opts: TokenizerOptions) {
-    return new Tokenizer(input, opts);
+  static from(sink: TokenSink, input: string, opts: TokenizerOptions) {
+    return new Tokenizer(sink, input, opts);
   }
 
   input: string;
@@ -41,8 +41,10 @@ export class Tokenizer {
   current_attribute_value: string;
   current_tag: HtmlTagToken;
   shouldReconsume: boolean;
+  sink;
 
-  constructor(input: string, opts: TokenizerOptions) {
+  constructor(sink: TokenSink, input: string, opts: TokenizerOptions) {
+    this.sink = sink;
     this.state = State.Data;
     this.at_eof = false;
     this.shouldReconsume = false;
@@ -130,12 +132,18 @@ export class Tokenizer {
           if (isBracket && !isEof) {
             this.state = State.TagOpen;
           } else if (isEof) {
+            this.sink.process_token(new EOFToken(
+              this.input,
+              this.pos,
+              this.pos,
+            ));
             yield new EOFToken(
               this.input,
               this.pos,
               this.pos,
             )
           } else {
+            this.sink.process_token(new CharacterToken(this.input, this.pos, this.pos, this.current_input_character));
             yield new CharacterToken(this.input, this.pos, this.pos, this.current_input_character);
           }
           break;
@@ -163,6 +171,7 @@ export class Tokenizer {
             this.state = State.Data;
 
             this.current_tag.updateEndPos(this.pos);
+            this.sink.process_token(this.current_tag);
             yield this.current_tag;
           } else {
             this.current_tag.appendName(this.current_input_character);
@@ -292,6 +301,7 @@ export class Tokenizer {
               this.current_tag.addAttribute(extraAttribute);
               this.current_tag.updateEndPos(this.pos);
               // emit tag token
+              this.sink.process_token(this.current_tag);
               yield this.current_tag; 
           }
           break;
@@ -310,8 +320,18 @@ export const htmlTokenizer = () => {
   const demoHtml = `<div class="px4" id="main">
     <p class="flex" id="xxx"> demo content </p>
     </div>`;
+    
   console.log("html is", demoHtml);
-  const tokenizer = new Tokenizer(demoHtml, {});
 
-  logDeep([...tokenizer.tokenize(demoHtml)]);
+  const logTokenSink: TokenSink = {
+    process_token: (token) => {
+      logDeep(token)
+      return TokenSinkResult.Continue
+    },
+    end: () => {}
+  }
+  const tokenizer = new Tokenizer(logTokenSink,demoHtml, {});
+
+  // logDeep([...tokenizer.tokenize(demoHtml)]);
+  const tokens = [...tokenizer.tokenize(demoHtml)];
 };
