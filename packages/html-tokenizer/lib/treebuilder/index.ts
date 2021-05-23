@@ -1,14 +1,5 @@
-import {TopLevelToken} from '../tokens/tokens'
-import {TreeBuildState} from './state'
-export class TreeBuilder {
+import {TreeBuilder} from './treebuilder'
 
-    /// Insertion mode.
-    state: TreeBuildState
-    /// Stack of open elements, most recently added at end.
-    open_elems: TopLevelToken[]
+const tb = new TreeBuilder({sink: {},tokens: []});
 
-    constructor({}) {
-        this.state = TreeBuildState.Initial
-        this.open_elems = []
-    }   
-}
+console.log('tree builder', tb);
