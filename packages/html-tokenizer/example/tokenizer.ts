@@ -19,5 +19,14 @@ const logTokenSink: TokenSink = {
 const tokenizer = new Tokenizer(logTokenSink,demoHtml, {});
 
 // logDeep([...tokenizer.tokenize(demoHtml)]);
-const tokens = [...tokenizer.tokenize(demoHtml)];
+// const tokens = [...tokenizer.tokenize(demoHtml)];
+
+// let count = 1;
+// while(true) {
+//   console.log('count', count);
+//   count += 1;
+//   if(count >= 10) {
+//     break;
+//   } 
+// }
   
