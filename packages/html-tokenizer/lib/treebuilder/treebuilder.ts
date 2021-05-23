@@ -45,15 +45,16 @@ export class TreeBuilder implements TokenSink {
   end() {}
   
   process_token_to_complete(token: TopLevelToken): TokenSinkResult {
-      while(true) {
-        let res = this.setp(this.mode, token);        
-      }
+      // while(true) {
+    let res = this.setp(this.mode, token);        
+      // }
     return TokenSinkResult.Continue;
   }
   
   setp(mode: TreeBuildState, token: TopLevelToken): ProcessResult {
       switch (mode) {
           case TreeBuildState.Initial:
+              console.log('step token', token);
              if(token.kind === TokenKind.CharacterToken) {
                 // TODO: do this logic later
              } else {
@@ -62,6 +63,7 @@ export class TreeBuilder implements TokenSink {
             break;
       
           default:
+              console.log('step token', token);
               break;
       }
       return ProcessResult.Done;

@@ -1,5 +1,2 @@
 export {Tokenizer} from './html-tokenizer'
-
-import {htmlTokenizer} from './html-tokenizer'
-
-htmlTokenizer();
+export {TokenSink,TokenKind,TokenSinkResult} from './types'
