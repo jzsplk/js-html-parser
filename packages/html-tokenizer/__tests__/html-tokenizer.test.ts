@@ -1,9 +1,18 @@
 import { Tokenizer } from "../lib/html-tokenizer";
+import { TokenSinkResult } from "../lib/types";
+import { TopLevelToken } from "../lib/tokens/tokens";
+
+const mockTokenSink = {
+  process_token: (token: TopLevelToken) => {
+    return TokenSinkResult.Continue;
+  },
+  end: () => {},
+};
 
 describe("html-tokenizer", () => {
   it("should return right open tag and end tag and char", () => {
     const demoHtml = "<html><div>mock content</div></html>";
-    const tokenizer = Tokenizer.from(demoHtml, {});
+    const tokenizer = Tokenizer.from(mockTokenSink, demoHtml, {});
     expect([...tokenizer.tokenize(demoHtml)]).toMatchInlineSnapshot(`
       Array [
         HtmlTagToken {
@@ -99,7 +108,8 @@ describe("html-tokenizer", () => {
 
   it("should return right token with tokenize method", () => {
     const demoHtml = "<html><div>mock content</div></html>";
-    expect([...Tokenizer.tokenize(demoHtml)]).toMatchInlineSnapshot(`
+    expect([...Tokenizer.tokenize(mockTokenSink, demoHtml)])
+      .toMatchInlineSnapshot(`
       Array [
         HtmlTagToken {
           "attributes": Array [],
