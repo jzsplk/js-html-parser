@@ -11,7 +11,7 @@ interface ProcessData {
   token: TopLevelToken;
 }
 
-export class TreeBuilder<Sink extends TreeSink<any, any>> implements TokenSink {
+export class TreeBuilder<Handle, Sink extends TreeSink<Handle, any>> implements TokenSink {
   sink: Sink;
 
   // Tokens
@@ -21,7 +21,7 @@ export class TreeBuilder<Sink extends TreeSink<any, any>> implements TokenSink {
 
   orig_mode: TreeBuildMode | null;
   /// Stack of open elements, most recently added at end.
-  open_elems: any[];
+  open_elems: Handle[];
 
   constructor({ sink, tokens }: { sink: Sink; tokens: TopLevelToken[] }) {
     this.sink = sink;
@@ -102,6 +102,7 @@ export class TreeBuilder<Sink extends TreeSink<any, any>> implements TokenSink {
           return {processResult: ProcessResult.Done, token, mode: this.mode};
         } else if(matchTagToken(token, ['<html>'])) {
           console.log('match <html>', mode, token.getText());
+          this.create_root(token.attributes);
           this.mode = TreeBuildMode.BeforeHead;
           return {processResult: ProcessResult.Done, token, mode: this.mode};
         } else if(matchTagToken(token, ['</head>', '</body>', '</html>', '</br>'])) {
