@@ -29,7 +29,7 @@ export const isHtmlTagToken = (token: TopLevelToken): token is HtmlTagToken => {
   return token.kind === TokenKind.HtmlTagToken;
 };
 
-export const matchTagToken = (token: TopLevelToken, tags: string[]): boolean => {
+export const matchTagToken = (token: TopLevelToken, tags: string[]): token is HtmlTagToken => {
   if(!isHtmlTagToken(token)) {
     return false;
   }
