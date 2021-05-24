@@ -1,8 +1,9 @@
 import { TopLevelToken } from "../tokens/tokens";
 import { TreeBuildMode } from "./state";
 import { TokenSinkResult, TokenKind, TokenSink } from "../types";
-import { ProcessResult } from "./types";
+import { ProcessResult, TreeSink } from "./types";
 import { fromCharSet, isCharacterToken,isHtmlTagToken,matchTagToken } from "../utils";
+import {Attribute} from './types' 
 
 interface ProcessData {
   processResult: ProcessResult;
@@ -10,8 +11,8 @@ interface ProcessData {
   token: TopLevelToken;
 }
 
-export class TreeBuilder implements TokenSink {
-  sink: any;
+export class TreeBuilder<Sink extends TreeSink<any, any>> implements TokenSink {
+  sink: Sink;
 
   // Tokens
   tokens: TopLevelToken[];
@@ -22,7 +23,7 @@ export class TreeBuilder implements TokenSink {
   /// Stack of open elements, most recently added at end.
   open_elems: any[];
 
-  constructor({ sink, tokens }: { sink: any; tokens: TopLevelToken[] }) {
+  constructor({ sink, tokens }: { sink: Sink; tokens: TopLevelToken[] }) {
     this.sink = sink;
     this.mode = TreeBuildMode.Initial;
     this.open_elems = [];
@@ -33,8 +34,18 @@ export class TreeBuilder implements TokenSink {
   // TODO
   insert_element() {}
 
+  push(el: any) {
+    this.open_elems.push(el);
+  }
+
   // TODO
   insert_element_for() {}
+  
+  create_root(attrs: Attribute[]) {
+    const elem = this.sink.create_element('', attrs); 
+    this.push(elem);
+    // this.sink.append(doc_hanlde, elem);
+  }
 
   // reprocess(mode: TreeBuildState, token: TopLevelToken) {
   //   this.mode = mode;
@@ -97,9 +108,12 @@ export class TreeBuilder implements TokenSink {
           console.log('match tag', mode, token.getText());
           return { processResult: ProcessResult.Done, token, mode: this.mode };
         } else {
-          console.log('else', token.getText());
-          return { processResult: ProcessResult.Done, token, mode: this.mode };
+          console.log('else reprocess', token.getText());
+          return { processResult: ProcessResult.Reprocess, mode: TreeBuildMode.BeforeHead, token };
         }
+        break;
+      case TreeBuildMode.BeforeHead:
+          return {processResult: ProcessResult.Done, mode: this.mode, token};
         break;
 
       default:
