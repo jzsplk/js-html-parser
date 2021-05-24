@@ -11,7 +11,8 @@ const demoHtml = `
     </body>
 </html>`;
 
-const treeBuilder = new TreeBuilder({sink: {},tokens: []});
+// TODO: add mock tree sink
+const treeBuilder = new TreeBuilder({sink: {} as any,tokens: []});
 
 const tokenizer = new Tokenizer(treeBuilder, demoHtml, {});
 
