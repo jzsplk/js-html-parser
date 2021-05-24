@@ -7,3 +7,14 @@ export enum ProcessResult {
     Script = "Script",
     ToPlaintext = "ToPlaintext"
 }
+
+export interface Attribute {
+    name: string;
+    value: string;
+}
+
+export interface TreeSink<Handle, Output> {
+    finish(): Output;
+    create_element(name: string, attrs: Attribute[]): Handle;
+    get_document(): Handle; 
+}
