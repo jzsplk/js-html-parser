@@ -1,8 +1,13 @@
 import {Token} from './token'
 import {TokenKind} from '../types'
 
+// export interface Attribute {
+//     [name: string]: any;
+// }
+
 export interface Attribute {
-    [name: string]: any;
+    name: string;
+    value: string;
 }
 
 export enum TagTokenEnum {

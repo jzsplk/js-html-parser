@@ -200,7 +200,9 @@ export class Tokenizer {
         case State.BeforeAttributeName:
           if(this.current_attribute_name && this.current_attribute_value) {
             this.current_tag.attributes.push({
-              [this.current_attribute_name]: this.current_attribute_value
+              name: this.current_attribute_name,
+              value: this.current_attribute_value,
+              // [this.current_attribute_name]: this.current_attribute_value
             })
           }
           this.current_attribute_name = '';
@@ -295,7 +297,9 @@ export class Tokenizer {
             else if([...fromCharSet([0x003E])].includes(this.current_input_character)) {
               this.state = State.Data;
               const extraAttribute = {
-                [this.current_attribute_name]: this.current_attribute_value,
+                name: this.current_attribute_name,
+                value: this.current_attribute_value
+                // [this.current_attribute_name]: this.current_attribute_value,
               }
 
               this.current_tag.addAttribute(extraAttribute);
