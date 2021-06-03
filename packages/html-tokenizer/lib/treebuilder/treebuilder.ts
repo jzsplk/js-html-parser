@@ -60,7 +60,7 @@ export class TreeBuilder<Handle, Sink extends TreeSink<Handle, any>> implements 
   process_token_to_complete(token: TopLevelToken): TokenSinkResult {
     let res: ProcessData | null;
     while (true) {
-      res = this.setp(this.mode, token);
+      res = this.step(this.mode, token);
       // console.log('process res', res);
       if (res.processResult === ProcessResult.Done) {
         break;
@@ -73,7 +73,7 @@ export class TreeBuilder<Handle, Sink extends TreeSink<Handle, any>> implements 
     return TokenSinkResult.Continue;
   }
 
-  setp(mode: TreeBuildMode, token: TopLevelToken): ProcessData {
+  step(mode: TreeBuildMode, token: TopLevelToken): ProcessData {
     switch (mode) {
       case TreeBuildMode.Initial:
         console.log("step token in initial", token);
