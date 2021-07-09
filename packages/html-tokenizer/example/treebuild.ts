@@ -1,5 +1,6 @@
-import {TreeBuilder} from '../lib/treebuilder/index'
-import {Tokenizer} from '../lib/index' 
+import { TreeBuilder } from "../lib/treebuilder/index";
+import { Tokenizer } from "../lib/index";
+import { Node, NodeType } from "../lib/dom/dom";
 
 const demoHtml = `
 <html>
@@ -12,10 +13,14 @@ const demoHtml = `
 </html>`;
 
 // TODO: add mock tree sink
-const treeBuilder = new TreeBuilder({sink: {} as any,tokens: []});
+const dom = new Node({
+  type: NodeType.Comment,
+  contents: "",
+});
+const treeBuilder = new TreeBuilder({ sink: dom as any, tokens: [] });
 
 const tokenizer = new Tokenizer(treeBuilder, demoHtml, {});
 
-console.log('tree builder', treeBuilder);
+console.log("tree builder", treeBuilder);
 
 const tokens = [...tokenizer.tokenize(demoHtml)];
