@@ -42,7 +42,7 @@ export class TreeBuilder<Handle, Sink extends TreeSink<Handle, any>> implements 
   insert_element_for() {}
   
   create_root(attrs: Attribute[]) {
-    const elem = this.sink.create_element('', attrs); 
+    const elem = this.sink.create_element('html', attrs); 
     this.push(elem);
     // this.sink.append(doc_hanlde, elem);
   }

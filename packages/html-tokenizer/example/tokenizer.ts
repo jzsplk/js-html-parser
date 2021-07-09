@@ -16,10 +16,11 @@ const logTokenSink: TokenSink = {
   },
   end: () => {}
 }
-const tokenizer = new Tokenizer(logTokenSink,demoHtml, {});
+const tokenizer = new Tokenizer(logTokenSink, demoHtml, {});
 
 // logDeep([...tokenizer.tokenize(demoHtml)]);
-// const tokens = [...tokenizer.tokenize(demoHtml)];
+const tokens = [...tokenizer.tokenize(demoHtml)];
+console.log(tokens);
 
 // let count = 1;
 // while(true) {
