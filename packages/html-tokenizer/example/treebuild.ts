@@ -1,6 +1,7 @@
 import { TreeBuilder } from "../lib/treebuilder/index";
 import { Tokenizer } from "../lib/index";
 import { Node, NodeType } from "../lib/dom/dom";
+import {logDeep} from '../lib/utils'
 
 const demoHtml = `
 <html>
@@ -21,6 +22,6 @@ const treeBuilder = new TreeBuilder({ sink: dom as any, tokens: [] });
 
 const tokenizer = new Tokenizer(treeBuilder, demoHtml, {});
 
-console.log("tree builder", treeBuilder);
 
 const tokens = [...tokenizer.tokenize(demoHtml)];
+logDeep(treeBuilder);
