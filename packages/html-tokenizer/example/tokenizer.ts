@@ -16,7 +16,7 @@ const logTokenSink: TokenSink = {
   },
   end: () => {}
 }
-const tokenizer = new Tokenizer(logTokenSink,demoHtml, {});
+const tokenizer = new Tokenizer(logTokenSink, demoHtml, {});
 
 logDeep([...tokenizer.tokenize(demoHtml)]);
 // const tokens = [...tokenizer.tokenize(demoHtml)];
