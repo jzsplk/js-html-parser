@@ -1,6 +1,6 @@
 import { TreeBuilder } from "../lib/treebuilder/index";
 import { Tokenizer } from "../lib/index";
-import { Node, NodeType } from "../lib/dom/dom";
+import { RcDom, NodeType } from "../lib/dom/dom";
 import {logDeep} from '../lib/utils'
 
 const demoHtml = `
@@ -14,10 +14,7 @@ const demoHtml = `
 </html>`;
 
 // TODO: add mock tree sink
-const dom = new Node({
-  type: NodeType.Comment,
-  contents: "",
-});
+const dom = new RcDom();
 const treeBuilder = new TreeBuilder({ sink: dom as any, tokens: [] });
 
 const tokenizer = new Tokenizer(treeBuilder, demoHtml, {});
