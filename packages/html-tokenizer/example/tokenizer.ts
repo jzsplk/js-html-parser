@@ -18,7 +18,7 @@ const logTokenSink: TokenSink = {
 }
 const tokenizer = new Tokenizer(logTokenSink,demoHtml, {});
 
-// logDeep([...tokenizer.tokenize(demoHtml)]);
+logDeep([...tokenizer.tokenize(demoHtml)]);
 // const tokens = [...tokenizer.tokenize(demoHtml)];
 
 // let count = 1;
