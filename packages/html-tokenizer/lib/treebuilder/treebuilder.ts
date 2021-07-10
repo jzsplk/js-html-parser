@@ -13,6 +13,7 @@ interface ProcessData {
 
 export class TreeBuilder<Handle, Sink extends TreeSink<Handle, any>> implements TokenSink {
   sink: Sink;
+  doc_handle: Handle;
 
   // Tokens
   tokens: TopLevelToken[];
@@ -24,11 +25,14 @@ export class TreeBuilder<Handle, Sink extends TreeSink<Handle, any>> implements 
   open_elems: Handle[];
 
   constructor({ sink, tokens }: { sink: Sink; tokens: TopLevelToken[] }) {
+    const doc_handle = sink.get_document();
+
     this.sink = sink;
     this.mode = TreeBuildMode.Initial;
     this.open_elems = [];
     this.tokens = tokens;
     this.orig_mode = null;
+    this.doc_handle = doc_handle;
   }
 
   // TODO
