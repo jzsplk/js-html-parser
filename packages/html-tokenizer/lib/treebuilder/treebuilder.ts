@@ -12,7 +12,7 @@ interface ProcessData {
 }
 
 export class TreeBuilder<Handle, Sink extends TreeSink<Handle, any>> implements TokenSink {
-  sink: Sink;
+  sink: Sink; 
   doc_handle: Handle;
 
   // Tokens
@@ -23,6 +23,9 @@ export class TreeBuilder<Handle, Sink extends TreeSink<Handle, any>> implements 
   orig_mode: TreeBuildMode | null;
   /// Stack of open elements, most recently added at end.
   open_elems: Handle[];
+  
+  // head element pointer
+  head_elem: Handle | null;
 
   constructor({ sink, tokens }: { sink: Sink; tokens: TopLevelToken[] }) {
     const doc_handle = sink.get_document();
@@ -33,6 +36,7 @@ export class TreeBuilder<Handle, Sink extends TreeSink<Handle, any>> implements 
     this.tokens = tokens;
     this.orig_mode = null;
     this.doc_handle = doc_handle;
+    this.head_elem  = null;
   }
 
   // TODO
@@ -105,19 +109,22 @@ export class TreeBuilder<Handle, Sink extends TreeSink<Handle, any>> implements 
           // ignore
           return {processResult: ProcessResult.Done, token, mode: this.mode};
         } else if(matchTagToken(token, ['<html>'])) {
-          console.log('match <html>', mode, token.getText());
-          this.create_root(token.attributes);
-          this.mode = TreeBuildMode.BeforeHead;
-          return {processResult: ProcessResult.Done, token, mode: this.mode};
-        } else if(matchTagToken(token, ['</head>', '</body>', '</html>', '</br>'])) {
+          console.log('match <html>', mode, token.getText()); this.create_root(token.attributes); this.mode = TreeBuildMode.BeforeHead; return {processResult: ProcessResult.Done, token, mode: this.mode}; } else if(matchTagToken(token, ['</head>', '</body>', '</html>', '</br>'])) {
           console.log('match tag', mode, token.getText());
           return { processResult: ProcessResult.Done, token, mode: this.mode };
         } else {
           console.log('else reprocess', token.getText());
+          this.create_root([]);
           return { processResult: ProcessResult.Reprocess, mode: TreeBuildMode.BeforeHead, token };
         }
         break;
       case TreeBuildMode.BeforeHead:
+          if(matchTagToken(token, ['<html>'])) {
+            this.step(TreeBuildMode.InBody, token);
+          } else if(matchTagToken(token, ['<head>'])) {
+            // this.head_elem = this.insert_element_for(token); this.mode = TreeBuildMode.InHead;
+            return {processResult: ProcessResult.Done, mode: this.mode, token};
+          } 
           return {processResult: ProcessResult.Done, mode: this.mode, token};
         break;
 
